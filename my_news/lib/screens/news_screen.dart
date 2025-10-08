@@ -11,32 +11,13 @@ class NewsScreen extends StatefulWidget {
 }
 
 class _NewsScreenState extends State<NewsScreen> {
+
   final NewsService _newsService = NewsService();
   final TextEditingController _searchController = TextEditingController();
-  List<News> _news = [];
-  bool _isLoading = false;
-  String _errorMessage = '';
 
-  Future<void> _searchNews() async {
+  void _searchNews() {
     if (_searchController.text.isEmpty) return;
-
-    setState(() {
-      _isLoading = true;
-      _errorMessage = '';
-    });
-
-    try {
-      final articles = await _newsService.searchNews(_searchController.text);
-      setState(() {
-        _news = articles;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Ошибка при загрузке новостей';
-        _isLoading = false;
-      });
-    }
+    _newsService.searchNews(_searchController.text);
   }
 
   @override
@@ -82,16 +63,7 @@ class _NewsScreenState extends State<NewsScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: _isLoading
-                    ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
-                    : const Text(
+                child: Text(
                   'Поиск',
                   style: TextStyle(fontSize: 16),
                 ),
@@ -102,7 +74,32 @@ class _NewsScreenState extends State<NewsScreen> {
 
             // Результаты поиска
             Expanded(
-              child: _buildResults(),
+              child: StreamBuilder<List<News>>(
+                  stream: _newsService.newsStream,
+                  builder: (context, snapshot) {
+
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Text('Ошибка: ${snapshot.error}'),
+                      );
+                    }
+
+                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const Center(
+                        child: Text('Введите запрос для поиска новостей'),
+                      );
+                    }
+
+                    final news = snapshot.data!;
+
+                    return ListView.builder(
+                      itemCount: news.length,
+                      itemBuilder: (context, i) {
+                        return NewsItem(news: news[i]);
+                      }
+                    );
+                  }
+              )
             ),
           ],
         ),
@@ -110,51 +107,10 @@ class _NewsScreenState extends State<NewsScreen> {
     );
   }
 
-  Widget _buildResults() {
-
-    TextStyle style = TextStyle(fontSize: 16, color: Colors.black);
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_errorMessage.isNotEmpty) {
-      return Center(
-        child: Text(
-          _errorMessage,
-          style: const TextStyle(fontSize: 20, color: Colors.red),
-        ),
-      );
-    }
-
-    if (_news.isEmpty && _searchController.text.isNotEmpty) {
-      return Center(
-        child: Text(
-          'Новостей не найдено',
-          style: style
-        ),
-      );
-    }
-
-    if (_news.isEmpty) {
-      return Center(
-        child: Text(
-          'Введите запрос для поиска новостей',
-          style: style
-        ),
-      );
-    }
-
-    return ListView.builder(
-      itemCount: _news.length,
-      itemBuilder: (context, index) {
-        return NewsItem(news: _news[index]);
-      },
-    );
-  }
-
   //отписка
   @override
   void dispose() {
+    _newsService.dispose();
     _searchController.dispose();
     super.dispose();
   }
