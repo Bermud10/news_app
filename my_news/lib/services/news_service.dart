@@ -17,7 +17,7 @@ class NewsService {
       newsController.add([]);
 
       final response = await http.get(
-        Uri.parse('$_baseUrl/everything?q=$query&sortBy=publishedAt&apiKey=$_apiKey'),
+        Uri.parse('$_baseUrl/everything?q=$query&sortBy=publishedAt&pageSize=25&apiKey=$_apiKey'),
       );
 
       if (response.statusCode == 200) {

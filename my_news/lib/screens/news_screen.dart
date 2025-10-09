@@ -24,15 +24,15 @@ class _NewsScreenState extends State<NewsScreen> {
       _isLoading = true;
     });
 
-  try {
-    await _newsService.searchNews(_searchController.text);
-  }catch (e) {
-    print("Ошибка при поиске");
-  } finally {
-    setState(() {
-      _isLoading = false;
-    });
-  }
+    try {
+      await _newsService.searchNews(_searchController.text);
+    } catch (e) {
+      print("Ошибка при поиске");
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
