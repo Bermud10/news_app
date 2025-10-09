@@ -14,10 +14,25 @@ class _NewsScreenState extends State<NewsScreen> {
 
   final NewsService _newsService = NewsService();
   final TextEditingController _searchController = TextEditingController();
+  bool _isLoading = false;
 
-  void _searchNews() {
+  void _searchNews() async {
+
     if (_searchController.text.isEmpty) return;
-    _newsService.searchNews(_searchController.text);
+
+    setState(() {
+      _isLoading = true;
+    });
+
+  try {
+    await _newsService.searchNews(_searchController.text);
+  }catch (e) {
+    print("Ошибка при поиске");
+  } finally {
+    setState(() {
+      _isLoading = false;
+    });
+  }
   }
 
   @override
@@ -63,7 +78,14 @@ class _NewsScreenState extends State<NewsScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text(
+                child: _isLoading ?
+                  SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(),
+                  )
+
+                : Text(
                   'Поиск',
                   style: TextStyle(fontSize: 16),
                 ),
@@ -77,6 +99,10 @@ class _NewsScreenState extends State<NewsScreen> {
               child: StreamBuilder<List<News>>(
                   stream: _newsService.newsStream,
                   builder: (context, snapshot) {
+
+                    if (_isLoading && !snapshot.hasData) {
+                      return Center(child: CircularProgressIndicator());
+                    }
 
                     if (snapshot.hasError) {
                       return Center(

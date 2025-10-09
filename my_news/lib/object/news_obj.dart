@@ -22,7 +22,7 @@ class News {
       url: json['url'] ?? '',
       urlToImage: json['urlToImage'],
       publishedAt: DateTime.parse(json['publishedAt'] ?? DateTime.now().toString()),
-      source: json['source']['name'] ?? 'Unknown source',
+      source: json['source']['name'] ?? 'Source not found',
     );
   }
 }
