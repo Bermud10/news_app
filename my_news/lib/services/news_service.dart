@@ -9,19 +9,25 @@ class NewsService {
 
   Stream<List<News>> searchNews(String query) async* {
 
-    final request = http.Request('GET', Uri.parse('$_baseUrl/everything?q=$query&sortBy=publishedAt&pageSize=25&apiKey=$_apiKey'));
+    try {
+      final request = http.Request('GET', Uri.parse(
+          '$_baseUrl/everything?q=$query&sortBy=publishedAt&pageSize=25&apiKey=$_apiKey'));
 
-    final response = await http.Client().send(request);
+      final response = await http.Client().send(request);
 
-    String respData = await response.stream.bytesToString();
+      String respData = await response.stream.bytesToString();
 
-    Map<String,dynamic> jsonResp =  jsonDecode(respData);
+      Map<String, dynamic> jsonResp = jsonDecode(respData);
 
-    final List<News> body = (jsonResp["articles"])
-        .map<News>((obj) => News.fromJson(obj))
-        .toList();
+      final List<News> body = (jsonResp["articles"])
+          .map<News>((obj) => News.fromJson(obj))
+          .toList();
 
-    yield body ;
+      yield body;
+    } catch (e) {
+      print("Ошибка при запросе на получение новостей");
+      yield [];
+    }
 
   }
 }
