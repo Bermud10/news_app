@@ -29,19 +29,14 @@ class NewsItem extends StatelessWidget {
             children: [
 
               if (news.urlToImage != null && news.urlToImage!.isNotEmpty) ... [
-                Container(
-                    width: 120,
-                    height: 120,
-                    child: Image.network(
-                      news.urlToImage!,
-                      errorBuilder: (BuildContext context, Object exception,StackTrace? stackTrace) {
-                        return Container(
-                          color: Colors.grey[300],
-                          child: const Icon(Icons.broken_image, color: Colors.grey),
-                        );
-                      },
+                Image.network(
+                  width: 120,
+                  height: 120,
+                  news.urlToImage!,
+                  errorBuilder: (BuildContext context, Object exception,StackTrace? stackTrace) {
+                    return SizedBox.shrink();
+                  },
 
-                    )
                 ),
                 const SizedBox(width: 12),
               ],

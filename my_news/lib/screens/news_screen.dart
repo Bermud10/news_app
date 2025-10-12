@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../object/news_obj.dart';
 import '../services/news_service.dart';
@@ -14,7 +15,14 @@ class _NewsScreenState extends State<NewsScreen> {
 
   final NewsService _newsService = NewsService();
   final TextEditingController _searchController = TextEditingController();
+  late StreamSubscription? subscription;
   bool _isLoading = false;
+
+  late List<News> listNews;
+
+  final StreamController<List<News>> newsController = StreamController<List<News>>();
+
+  Stream<List<News>> get newsStream => newsController.stream;
 
   void _searchNews() async {
 
@@ -25,13 +33,20 @@ class _NewsScreenState extends State<NewsScreen> {
     });
 
     try {
-      await _newsService.searchNews(_searchController.text);
+
+      subscription = _newsService.searchNews(_searchController.text).listen((data) {
+
+        listNews = data;
+
+        newsController.add(listNews);
+
+        setState(() {
+          _isLoading = false;
+        });
+
+      });
     } catch (e) {
       print("Ошибка при поиске");
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 
@@ -97,11 +112,17 @@ class _NewsScreenState extends State<NewsScreen> {
             // Результаты поиска
             Expanded(
               child: StreamBuilder<List<News>>(
-                  stream: _newsService.newsStream,
+                  stream: newsStream,
                   builder: (context, snapshot) {
 
                     if (_isLoading && !snapshot.hasData) {
                       return Center(child: CircularProgressIndicator());
+                    }
+
+                    if (_searchController.text.isNotEmpty && snapshot.data!.isEmpty) {
+                      return Center(
+                        child: Text('Новостей не найдено'),
+                      );
                     }
 
                     if (snapshot.hasError) {
@@ -136,7 +157,7 @@ class _NewsScreenState extends State<NewsScreen> {
   //отписка
   @override
   void dispose() {
-    _newsService.dispose();
+    subscription?.cancel();
     _searchController.dispose();
     super.dispose();
   }
