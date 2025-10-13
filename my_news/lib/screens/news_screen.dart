@@ -18,11 +18,7 @@ class _NewsScreenState extends State<NewsScreen> {
   late StreamSubscription? subscription;
   bool _isLoading = false;
 
-  late List<News> listNews;
-
-  final StreamController<List<News>> newsController = StreamController<List<News>>();
-
-  Stream<List<News>> get newsStream => newsController.stream;
+  List<News> listNews = [];
 
   void _searchNews() async {
 
@@ -37,8 +33,7 @@ class _NewsScreenState extends State<NewsScreen> {
       subscription = _newsService.searchNews(_searchController.text).listen((data) {
 
         listNews = data;
-
-        newsController.add(listNews);
+        print("!!!!!! ${listNews}");
 
         setState(() {
           _isLoading = false;
@@ -109,45 +104,53 @@ class _NewsScreenState extends State<NewsScreen> {
 
             const SizedBox(height: 24),
 
-            // Результаты поиска
-            Expanded(
-              child: StreamBuilder<List<News>>(
-                  stream: newsStream,
-                  builder: (context, snapshot) {
+           Expanded(
+             child: ListView.builder(
+               itemCount: listNews.length,
+               itemBuilder: (context, i) {
+                 return NewsItem(news: listNews[i]);
+               }
+             ),
+           )
 
-                    if (_isLoading && !snapshot.hasData) {
-                      return Center(child: CircularProgressIndicator());
-                    }
-
-                    if (_searchController.text.isNotEmpty && snapshot.data!.isEmpty) {
-                      return Center(
-                        child: Text('Новостей не найдено'),
-                      );
-                    }
-
-                    if (snapshot.hasError) {
-                      return Center(
-                        child: Text('Ошибка: ${snapshot.error}'),
-                      );
-                    }
-
-                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const Center(
-                        child: Text('Введите запрос для поиска новостей'),
-                      );
-                    }
-
-                    final news = snapshot.data!;
-
-                    return ListView.builder(
-                      itemCount: news.length,
-                      itemBuilder: (context, i) {
-                        return NewsItem(news: news[i]);
-                      }
-                    );
-                  }
-              )
-            ),
+            // Expanded(
+            //   child: StreamBuilder<List<News>>(
+            //       stream: newsStream,
+            //       builder: (context, snapshot) {
+            //
+            //         if (_isLoading && !snapshot.hasData) {
+            //           return Center(child: CircularProgressIndicator());
+            //         }
+            //
+            //         if (_searchController.text.isNotEmpty && snapshot.data!.isEmpty) {
+            //           return Center(
+            //             child: Text('Новостей не найдено'),
+            //           );
+            //         }
+            //
+            //         if (snapshot.hasError) {
+            //           return Center(
+            //             child: Text('Ошибка: ${snapshot.error}'),
+            //           );
+            //         }
+            //
+            //         if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            //           return const Center(
+            //             child: Text('Введите запрос для поиска новостей'),
+            //           );
+            //         }
+            //
+            //         final news = snapshot.data!;
+            //
+            //         return ListView.builder(
+            //           itemCount: news.length,
+            //           itemBuilder: (context, i) {
+            //             return NewsItem(news: news[i]);
+            //           }
+            //         );
+            //       }
+            //   )
+            // ),
           ],
         ),
       ),
