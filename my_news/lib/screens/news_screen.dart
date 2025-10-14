@@ -33,7 +33,6 @@ class _NewsScreenState extends State<NewsScreen> {
       subscription = _newsService.searchNews(_searchController.text).listen((data) {
 
         listNews = data;
-        print("!!!!!! ${listNews}");
 
         setState(() {
           _isLoading = false;
@@ -108,49 +107,24 @@ class _NewsScreenState extends State<NewsScreen> {
              child: ListView.builder(
                itemCount: listNews.length,
                itemBuilder: (context, i) {
+
+                 if (_isLoading) {
+                   return CircularProgressIndicator();
+                 }
+
+                 if(_searchController.text.isNotEmpty && listNews.isEmpty){
+                   return Center(
+                     child: Text(
+                       "Новостей не найдено"
+                     ),
+                   );
+                 }
+
                  return NewsItem(news: listNews[i]);
                }
              ),
            )
 
-            // Expanded(
-            //   child: StreamBuilder<List<News>>(
-            //       stream: newsStream,
-            //       builder: (context, snapshot) {
-            //
-            //         if (_isLoading && !snapshot.hasData) {
-            //           return Center(child: CircularProgressIndicator());
-            //         }
-            //
-            //         if (_searchController.text.isNotEmpty && snapshot.data!.isEmpty) {
-            //           return Center(
-            //             child: Text('Новостей не найдено'),
-            //           );
-            //         }
-            //
-            //         if (snapshot.hasError) {
-            //           return Center(
-            //             child: Text('Ошибка: ${snapshot.error}'),
-            //           );
-            //         }
-            //
-            //         if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            //           return const Center(
-            //             child: Text('Введите запрос для поиска новостей'),
-            //           );
-            //         }
-            //
-            //         final news = snapshot.data!;
-            //
-            //         return ListView.builder(
-            //           itemCount: news.length,
-            //           itemBuilder: (context, i) {
-            //             return NewsItem(news: news[i]);
-            //           }
-            //         );
-            //       }
-            //   )
-            // ),
           ],
         ),
       ),
