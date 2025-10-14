@@ -20,7 +20,27 @@ class _NewsScreenState extends State<NewsScreen> {
 
   List<News> listNews = [];
 
-  void _searchNews() async {
+  ScrollController _scrollController = ScrollController();
+  int page = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_loadMoreData);
+  }
+
+  void _loadMoreData() {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent - 10) {
+
+      setState(() {
+        page += 1;
+        _searchNews(page: page);
+      });
+    }
+  }
+
+  void _searchNews({page}) async {
 
     if (_searchController.text.isEmpty) return;
 
@@ -30,9 +50,9 @@ class _NewsScreenState extends State<NewsScreen> {
 
     try {
 
-      subscription = _newsService.searchNews(_searchController.text).listen((data) {
+      subscription = _newsService.searchNews(_searchController.text, page: page).listen((data) {
 
-        listNews = data;
+        listNews.add(data as News);
 
         setState(() {
           _isLoading = false;
@@ -105,6 +125,7 @@ class _NewsScreenState extends State<NewsScreen> {
 
            Expanded(
              child: ListView.builder(
+               controller: _scrollController,
                itemCount: listNews.length,
                itemBuilder: (context, i) {
 
@@ -136,6 +157,7 @@ class _NewsScreenState extends State<NewsScreen> {
   void dispose() {
     subscription?.cancel();
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 }

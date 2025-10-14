@@ -7,11 +7,11 @@ class NewsService {
   static const String _apiKey = '601a175c50f34e899a91fa10d12750c5';
   static const String _baseUrl = 'https://newsapi.org/v2';
 
-  Stream<List<News>> searchNews(String query) async* {
+  Stream<List<News>> searchNews(String query, {int page = 1}) async* {
 
     try {
       final request = http.Request('GET', Uri.parse(
-          '$_baseUrl/everything?q=$query&sortBy=publishedAt&pageSize=25&apiKey=$_apiKey'));
+          '$_baseUrl/everything?q=$query&sortBy=publishedAt&page=$page&apiKey=$_apiKey'));
 
       final response = await http.Client().send(request);
 
