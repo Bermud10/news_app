@@ -101,7 +101,28 @@ class _NewsScreenState extends State<NewsScreen> {
               ),
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
+
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pushNamed(context, "/create_news"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueGrey,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  'Создать новость',
+                  style: TextStyle(fontSize: 16),
+                ),
+              ),
+            ),
+
+          const SizedBox(height: 24),
 
            Expanded(
              child: ListView.builder(
