@@ -1,5 +1,9 @@
+// import 'package:fbdb/fbdb.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:my_news/object/news_obj.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
 class CreateNewsPage extends StatefulWidget {
 
@@ -17,7 +21,7 @@ class CreateNewsPageState extends State<CreateNewsPage> {
   TextEditingController imgController = TextEditingController();
   TextEditingController publishedAtController = TextEditingController();
   TextEditingController sourceController = TextEditingController();
-
+  late DateTime selectTime;
 
   @override
   Widget build(BuildContext context) {
@@ -73,11 +77,15 @@ class CreateNewsPageState extends State<CreateNewsPage> {
             SizedBox(height: 24),
             TextField(
               controller: publishedAtController,
+              onTap: () {
+                selectDate(context);
+              },
               decoration: InputDecoration(
                 label: Text("Время публикации новости"),
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12)
-                )
+                ),
+
               ),
             ),
             SizedBox(height: 24),
@@ -118,13 +126,45 @@ class CreateNewsPageState extends State<CreateNewsPage> {
   }
 
   getTextFromField() {
+
     String title = titleController.text;
     String description = descriptionController.text;
     String url = urlController.text;
-    String img = imgController.text;
+    String? urlToImage = imgController.text;
     String publishedAt = publishedAtController.text;
     String source = sourceController.text;
-    print("!!!! ${title}");
+
+    News newNews = News(
+        title: titleController.text,
+        description: descriptionController.text,
+        url: urlController.text,
+        urlToImage: imgController.text,
+        publishedAt: selectTime,
+        source: sourceController.text
+    );
+    
+    print("!!!! ${newNews.publishedAt}");
+
+  }
+
+  Future<void> selectDate(BuildContext context) async {
+
+    DateTime? time = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now(),
+      cancelText: 'Отмена',
+      confirmText: 'Выбрать',
+      helpText: 'Выберете дату',
+    );
+
+    if (time != null){
+      setState(() {
+        selectTime = time;
+        publishedAtController.text = DateFormat('yyyy-MM-dd').format(time);
+      });
+    }
   }
 
 }

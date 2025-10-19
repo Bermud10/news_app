@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/adapters.dart';
+import 'package:my_news/object/news_obj.dart';
 import 'package:my_news/page/create_news_page.dart';
 import 'package:my_news/page/main_screen.dart';
-import 'package:go_router/go_router.dart';
+// import 'package:go_router/go_router.dart';
 
-void main() {
+Future main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+  await Hive.openBox<News>('news_box');
   runApp(const MyApp());
 }
 

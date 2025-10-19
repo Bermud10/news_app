@@ -25,4 +25,15 @@ class News {
       source: json['source']['name'] ?? 'Source not found',
     );
   }
+
+  factory News.fromMap(Map<String, dynamic> map) {
+    return News(
+      title: map['title'],
+      description: map['description'],
+      url: map['url'],
+      urlToImage: map['urlToImage'],
+      publishedAt: map['publishedAt'],
+      source: map['source'],
+    );
+  }
 }

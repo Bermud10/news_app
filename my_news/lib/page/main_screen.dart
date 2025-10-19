@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/adapters.dart';
 import '../object/news_obj.dart';
-import '../services/news_service.dart';
 import '../widgets/news_item.dart';
 
 class NewsScreen extends StatefulWidget {
@@ -13,35 +13,26 @@ class NewsScreen extends StatefulWidget {
 
 class _NewsScreenState extends State<NewsScreen> {
 
-  final NewsService _newsService = NewsService();
+
   final TextEditingController _searchController = TextEditingController();
   late StreamSubscription? subscription;
   bool _isLoading = false;
 
-  List<News> listNews = [];
+  searchNewsFromBd(){
+    final allNews = Hive.box<News>('news_box').values;
+    var allNewsList = allNews.toList();
 
-  void _searchNews() async {
+    List<News> findNews = [];
 
-    if (_searchController.text.isEmpty) return;
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-
-      subscription = _newsService.searchNews(_searchController.text).listen((data) {
-
-        listNews = data;
-
-        setState(() {
-          _isLoading = false;
-        });
-
-      });
-    } catch (e) {
-      print("Ошибка при поиске");
+    for(News news in allNewsList){
+      if(news.title.contains(_searchController.text)){
+        findNews.add(news);
+      }
     }
+
+    findNews.sort((a,b) => a.publishedAt.compareTo(b.publishedAt));
+
+    return findNews;
   }
 
   @override
@@ -66,10 +57,10 @@ class _NewsScreenState extends State<NewsScreen> {
                 ),
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.search),
-                  onPressed: _searchNews,
+                  onPressed: searchNewsFromBd,
                 ),
               ),
-              onSubmitted: (_) => _searchNews(),
+              onSubmitted: (_) => searchNewsFromBd(),
             ),
 
             const SizedBox(height: 16),
@@ -78,7 +69,7 @@ class _NewsScreenState extends State<NewsScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _searchNews,
+                onPressed: searchNewsFromBd,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blueGrey,
                   foregroundColor: Colors.white,
@@ -126,14 +117,14 @@ class _NewsScreenState extends State<NewsScreen> {
 
            Expanded(
              child: ListView.builder(
-               itemCount: listNews.length,
+               itemCount: searchNewsFromBd().length,
                itemBuilder: (context, i) {
 
                  if (_isLoading) {
                    return CircularProgressIndicator();
                  }
 
-                 if(_searchController.text.isNotEmpty && listNews.isEmpty){
+                 if(_searchController.text.isNotEmpty && searchNewsFromBd().isEmpty){
                    return Center(
                      child: Text(
                        "Новостей не найдено"
@@ -141,7 +132,7 @@ class _NewsScreenState extends State<NewsScreen> {
                    );
                  }
 
-                 return NewsItem(news: listNews[i]);
+                 return NewsItem(news: searchNewsFromBd()[i]);
                }
              ),
            )
