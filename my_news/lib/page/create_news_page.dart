@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:my_news/object/news_obj.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
+import 'package:my_news/services/db_service.dart';
 
 class CreateNewsPage extends StatefulWidget {
 
@@ -127,13 +128,6 @@ class CreateNewsPageState extends State<CreateNewsPage> {
 
   getTextFromField() {
 
-    String title = titleController.text;
-    String description = descriptionController.text;
-    String url = urlController.text;
-    String? urlToImage = imgController.text;
-    String publishedAt = publishedAtController.text;
-    String source = sourceController.text;
-
     News newNews = News(
         title: titleController.text,
         description: descriptionController.text,
@@ -142,8 +136,8 @@ class CreateNewsPageState extends State<CreateNewsPage> {
         publishedAt: selectTime,
         source: sourceController.text
     );
-    
-    print("!!!! ${newNews.publishedAt}");
+
+    DbService.addNews(newNews);
 
   }
 

@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/adapters.dart';
+import 'package:my_news/services/db_service.dart';
 import '../object/news_obj.dart';
 import '../widgets/news_item.dart';
 
@@ -18,13 +18,20 @@ class _NewsScreenState extends State<NewsScreen> {
   late StreamSubscription? subscription;
   bool _isLoading = false;
 
-  searchNewsFromBd(){
-    final allNews = Hive.box<News>('news_box').values;
-    var allNewsList = allNews.toList();
+  late List<News> findNews;
 
-    List<News> findNews = [];
 
-    for(News news in allNewsList){
+  searchNewsFromBd() async {
+    findNews = [];
+
+    List<News>? allNews = await DbService.getAllNews();
+
+    if(allNews == null){
+      return;
+    }
+
+
+    for(News news in allNews){
       if(news.title.contains(_searchController.text)){
         findNews.add(news);
       }

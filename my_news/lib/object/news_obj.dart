@@ -1,4 +1,5 @@
 class News {
+  final int? id;
   final String title;
   final String description;
   final String url;
@@ -7,16 +8,18 @@ class News {
   final String source;
 
   News({
+    this.id,
     required this.title,
     required this.description,
     required this.url,
-    required this.urlToImage,
+    this.urlToImage,
     required this.publishedAt,
     required this.source,
   });
 
   factory News.fromJson(Map<String, dynamic> json) {
     return News(
+      id: json['id'],
       title: json['title'] ?? 'No title',
       description: json['description'] ?? 'No description',
       url: json['url'] ?? '',
@@ -26,14 +29,15 @@ class News {
     );
   }
 
-  factory News.fromMap(Map<String, dynamic> map) {
-    return News(
-      title: map['title'],
-      description: map['description'],
-      url: map['url'],
-      urlToImage: map['urlToImage'],
-      publishedAt: map['publishedAt'],
-      source: map['source'],
-    );
+  Map<String,dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'url': url,
+      'urlToImage': urlToImage,
+      'publishedAt': publishedAt,
+      'source': source,
+    };
   }
 }
