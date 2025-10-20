@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:my_news/services/db_service.dart';
+import 'package:go_router/go_router.dart';
+
 import '../object/news_obj.dart';
+import '../services/news_service.dart';
 import '../widgets/news_item.dart';
 
 class NewsScreen extends StatefulWidget {
@@ -104,7 +106,7 @@ class _NewsScreenState extends State<NewsScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => Navigator.pushNamed(context, "/create_news"),
+                onPressed: () => context.go("/create_news"),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blueGrey,
                   foregroundColor: Colors.white,
@@ -124,7 +126,7 @@ class _NewsScreenState extends State<NewsScreen> {
 
            Expanded(
              child: ListView.builder(
-               itemCount: searchNewsFromBd().length,
+               // itemCount: searchNewsFromBd().length,
                itemBuilder: (context, i) {
 
                  if (_isLoading) {

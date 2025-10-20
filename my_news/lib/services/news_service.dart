@@ -1,33 +1,54 @@
-import 'dart:async';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import '../object/news_obj.dart';
+import 'package:my_news/object/news_obj.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
 
-class NewsService {
-  static const String _apiKey = '601a175c50f34e899a91fa10d12750c5';
-  static const String _baseUrl = 'https://newsapi.org/v2';
+class DbService {
+  static const int _version = 1;
+  static const String _dbName = "News.db";
 
-  Stream<List<News>> searchNews(String query) async* {
+  static Future<Database> _getDB() async {
+    return openDatabase(
+        join(await getDatabasesPath(), _dbName),
+        onCreate: (db, version) async {
+          return
+            await db.execute('''CREATE TABLE TableNews(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          title TEXT NOT NULL,
+          description TEXT NOT NULL,
+          url TEXT NOT NULL,
+          urlToImage TEXT,
+          publishedAt TEXT NOT NULL,
+          source TEXT NOT NULL
+          )''');
+        },
+        version: _version
+    );
+  }
 
-    try {
-      final request = http.Request('GET', Uri.parse(
-          '$_baseUrl/everything?q=$query&sortBy=publishedAt&pageSize=25&apiKey=$_apiKey'));
+  static Future<int> addNews(News news) async {
+    final db = await _getDB();
+    return await db.insert("TableNews", news.toJson(), conflictAlgorithm: ConflictAlgorithm.replace);
+  }
 
-      final response = await http.Client().send(request);
 
-      String respData = await response.stream.bytesToString();
+  static Future<List<News>?> getAllNews() async {
+    final db = await _getDB();
+    final List<Map<String,dynamic>> maps = await db.query('TableNews');
 
-      Map<String, dynamic> jsonResp = jsonDecode(respData);
-
-      final List<News> body = (jsonResp["articles"])
-          .map<News>((obj) => News.fromJson(obj))
-          .toList();
-
-      yield body;
-    } catch (e) {
-      print("Ошибка при запросе на получение новостей");
-      yield [];
+    if(maps.isEmpty){
+      return null;
     }
+    return List.generate(maps.length, (i) => News.fromJson(maps[i]));
+  }
 
+  static Future<List<News>> searchNews(String query) async {
+    final db = await _getDB();
+    final List<Map<String, dynamic>> maps = await db.query(
+        "TableNews",
+        where: 'title LIKE ?',
+        whereArgs: [query]
+    );
+
+    return List.generate(maps.length, (i) => News.fromJson(maps[i]));
   }
 }

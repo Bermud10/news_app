@@ -1,10 +1,8 @@
-// import 'package:fbdb/fbdb.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:my_news/object/news_obj.dart';
-import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
-import 'package:my_news/services/db_service.dart';
+import '../services/news_service.dart';
 
 class CreateNewsPage extends StatefulWidget {
 
@@ -117,6 +115,26 @@ class CreateNewsPageState extends State<CreateNewsPage> {
                   ),
                   child: Text(
                       "Сохранить данные"
+                  )),
+            ),
+            SizedBox(height: 24),
+            Container(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton(
+                  onPressed: () => {
+                    context.go("/")
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueGrey,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                      "Страница поиска"
                   )),
             )
           ],
