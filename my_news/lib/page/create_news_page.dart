@@ -20,7 +20,8 @@ class CreateNewsPageState extends State<CreateNewsPage> {
   TextEditingController imgController = TextEditingController();
   TextEditingController publishedAtController = TextEditingController();
   TextEditingController sourceController = TextEditingController();
-  late DateTime selectTime;
+  late DateTime selectTime = DateTime.now();
+  String warningMess = "Заполните обязательные поля:\n -Заголовок\n -Описание\n -Ссылка на новость\n -Источник новости";
 
   @override
   Widget build(BuildContext context) {
@@ -102,9 +103,7 @@ class CreateNewsPageState extends State<CreateNewsPage> {
               width: double.infinity,
               height: 48,
               child: ElevatedButton(
-                  onPressed: () => {
-                    getTextFromField()
-                  },
+                  onPressed: getTextFromField,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueGrey,
                     foregroundColor: Colors.white,
@@ -144,7 +143,17 @@ class CreateNewsPageState extends State<CreateNewsPage> {
     );
   }
 
-  getTextFromField() {
+  getTextFromField() async {
+
+    if(
+    titleController.text.isEmpty ||
+    descriptionController.text.isEmpty ||
+    urlController.text.isEmpty ||
+    sourceController.text.isEmpty
+    ){
+      showModalDialog(context, warningMess);
+      return;
+    }
 
     News newNews = News(
         title: titleController.text,
@@ -155,7 +164,18 @@ class CreateNewsPageState extends State<CreateNewsPage> {
         source: sourceController.text
     );
 
-    DbService.addNews(newNews);
+    try {
+      DbService.addNews(newNews);
+
+      showModalDialog(context, "Новость добавлена");
+
+      setState(() {
+        clearControls();
+      });
+
+    }catch (e) {
+      showModalDialog(context, "Ошибка при добавлении новости");
+    }
 
   }
 
@@ -177,6 +197,32 @@ class CreateNewsPageState extends State<CreateNewsPage> {
         publishedAtController.text = DateFormat('yyyy-MM-dd').format(time);
       });
     }
+  }
+
+  clearControls(){
+    titleController.clear();
+    descriptionController.clear();
+    urlController.clear();
+    imgController.clear();
+    publishedAtController.clear();
+    sourceController.clear();
+  }
+
+  showModalDialog(BuildContext _context, String text){
+    return showDialog(
+        context: _context,
+        builder: (BuildContext context){
+          return AlertDialog(
+            content: Text(text),
+            actions: [
+              TextButton(
+                  onPressed: context.pop,
+                  child: Text("Ок")
+              )
+            ],
+          );
+        }
+    );
   }
 
 }

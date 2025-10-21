@@ -31,22 +31,26 @@ class DbService {
   }
 
 
-  static Future<List<News>?> getAllNews() async {
+  static Future<List<News>> getAllNews() async {
     final db = await _getDB();
     final List<Map<String,dynamic>> maps = await db.query('TableNews');
 
     if(maps.isEmpty){
-      return null;
+      return [];
     }
     return List.generate(maps.length, (i) => News.fromJson(maps[i]));
   }
 
-  static Future<List<News>> searchNews(String query) async {
+  Stream<List<News>> searchNews(String query){
+    return Stream.fromFuture(_searchNewsFuture(query));
+  }
+
+  static Future<List<News>> _searchNewsFuture(String query) async {
     final db = await _getDB();
     final List<Map<String, dynamic>> maps = await db.query(
         "TableNews",
         where: 'title LIKE ?',
-        whereArgs: [query]
+        whereArgs: ['%$query%']
     );
 
     return List.generate(maps.length, (i) => News.fromJson(maps[i]));

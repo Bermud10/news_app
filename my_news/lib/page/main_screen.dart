@@ -19,30 +19,7 @@ class _NewsScreenState extends State<NewsScreen> {
   final TextEditingController _searchController = TextEditingController();
   late StreamSubscription? subscription;
   bool _isLoading = false;
-
-  late List<News> findNews;
-
-
-  searchNewsFromBd() async {
-    findNews = [];
-
-    List<News>? allNews = await DbService.getAllNews();
-
-    if(allNews == null){
-      return;
-    }
-
-
-    for(News news in allNews){
-      if(news.title.contains(_searchController.text)){
-        findNews.add(news);
-      }
-    }
-
-    findNews.sort((a,b) => a.publishedAt.compareTo(b.publishedAt));
-
-    return findNews;
-  }
+  List<News> foundNews = [];
 
   @override
   Widget build(BuildContext context) {
@@ -126,14 +103,14 @@ class _NewsScreenState extends State<NewsScreen> {
 
            Expanded(
              child: ListView.builder(
-               // itemCount: searchNewsFromBd().length,
+               itemCount: foundNews.length,
                itemBuilder: (context, i) {
 
                  if (_isLoading) {
                    return CircularProgressIndicator();
                  }
 
-                 if(_searchController.text.isNotEmpty && searchNewsFromBd().isEmpty){
+                 if(_searchController.text.isNotEmpty && foundNews.isEmpty){
                    return Center(
                      child: Text(
                        "Новостей не найдено"
@@ -141,7 +118,7 @@ class _NewsScreenState extends State<NewsScreen> {
                    );
                  }
 
-                 return NewsItem(news: searchNewsFromBd()[i]);
+                 return NewsItem(news: foundNews[i]);
                }
              ),
            )
