@@ -14,6 +14,8 @@ class CreateNewsPage extends StatefulWidget {
 
 class CreateNewsPageState extends State<CreateNewsPage> {
 
+  DbService dbService = DbService();
+
   TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
   TextEditingController urlController = TextEditingController();
@@ -165,7 +167,7 @@ class CreateNewsPageState extends State<CreateNewsPage> {
     );
 
     try {
-      DbService.addNews(newNews);
+      dbService.addNews(newNews);
 
       showModalDialog(context, "Новость добавлена");
 

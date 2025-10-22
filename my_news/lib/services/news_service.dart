@@ -6,7 +6,7 @@ class DbService {
   static const int _version = 1;
   static const String _dbName = "News.db";
 
-  static Future<Database> _getDB() async {
+   Future<Database> _getDB() async {
     return openDatabase(
         join(await getDatabasesPath(), _dbName),
         onCreate: (db, version) async {
@@ -25,13 +25,13 @@ class DbService {
     );
   }
 
-  static Future<int> addNews(News news) async {
+  Future<int> addNews(News news) async {
     final db = await _getDB();
     return await db.insert("TableNews", news.toJson(), conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
 
-  static Future<List<News>> getAllNews() async {
+  Future<List<News>> getAllNews() async {
     final db = await _getDB();
     final List<Map<String,dynamic>> maps = await db.query('TableNews');
 
@@ -45,7 +45,7 @@ class DbService {
     return Stream.fromFuture(_searchNewsFuture(query));
   }
 
-  static Future<List<News>> _searchNewsFuture(String query) async {
+  Future<List<News>> _searchNewsFuture(String query) async {
     final db = await _getDB();
     final List<Map<String, dynamic>> maps = await db.query(
         "TableNews",
