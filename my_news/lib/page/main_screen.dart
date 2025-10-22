@@ -15,9 +15,10 @@ class NewsScreen extends StatefulWidget {
 
 class _NewsScreenState extends State<NewsScreen> {
 
+  DbService dbService = DbService();
 
   final TextEditingController _searchController = TextEditingController();
-  late StreamSubscription? subscription;
+  StreamSubscription<List<News>>? subscription;
   bool _isLoading = false;
   List<News> foundNews = [];
 
@@ -43,10 +44,10 @@ class _NewsScreenState extends State<NewsScreen> {
                 ),
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.search),
-                  onPressed: searchNewsFromBd,
+                  onPressed: getNewsFromBD,
                 ),
               ),
-              onSubmitted: (_) => searchNewsFromBd(),
+              // onSubmitted: (_) => searchNewsFromBd(),
             ),
 
             const SizedBox(height: 16),
@@ -55,7 +56,7 @@ class _NewsScreenState extends State<NewsScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: searchNewsFromBd,
+                onPressed: getNewsFromBD,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blueGrey,
                   foregroundColor: Colors.white,
@@ -127,6 +128,31 @@ class _NewsScreenState extends State<NewsScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> getNewsFromBD() async {
+
+    subscription?.cancel();
+
+   setState(() {
+     _isLoading = true;
+     foundNews = [];
+   });
+   print("!!!!!!");
+   final stream = dbService.searchNews(_searchController.text.trim());
+   subscription = stream.listen((value) {
+     setState(() {
+       print("!!!!!!${value}");
+       foundNews = value;
+       _isLoading = false;
+     });
+   },onError: (error) {
+     setState(() {
+       _isLoading = false;
+       foundNews = [];
+     });
+   }
+   );
   }
 
   //отписка
