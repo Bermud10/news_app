@@ -5,9 +5,15 @@ import 'package:path/path.dart';
 class DbService {
   static const int _version = 1;
   static const String _dbName = "News.db";
+  static Database? _database;
 
    Future<Database> _getDB() async {
-    return openDatabase(
+
+    if(_database != null) {
+      return _database!;
+    }
+
+    _database = await openDatabase(
         join(await getDatabasesPath(), _dbName),
         onCreate: (db, version) async {
           return
@@ -23,6 +29,7 @@ class DbService {
         },
         version: _version
     );
+    return _database!;
   }
 
   Future<int> addNews(News news) async {
