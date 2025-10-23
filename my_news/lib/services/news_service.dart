@@ -1,33 +1,33 @@
-import 'dart:async';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:hive/hive.dart';
 import '../object/news_obj.dart';
 
-class NewsService {
-  static const String _apiKey = '601a175c50f34e899a91fa10d12750c5';
-  static const String _baseUrl = 'https://newsapi.org/v2';
+class HiveDbService {
+  static const String _boxName = 'news_box';
 
-  Stream<List<News>> searchNews(String query) async* {
+  Future<Box<News>> _openBox() async {
+    return await Hive.openBox<News>(_boxName);
+  }
 
-    try {
-      final request = http.Request('GET', Uri.parse(
-          '$_baseUrl/everything?q=$query&sortBy=publishedAt&pageSize=25&apiKey=$_apiKey'));
+  Future<void> addNews(News news) async {
+    final box = await _openBox();
+    await box.add(news);
+  }
 
-      final response = await http.Client().send(request);
+  Future<List<News>> getAllNews() async {
+    final box = await _openBox();
+    return box.values.toList();
+  }
 
-      String respData = await response.stream.bytesToString();
+  Future<List<News>> searchNews(String query) async {
+    if (query.trim().isEmpty) return [];
 
-      Map<String, dynamic> jsonResp = jsonDecode(respData);
+    final box = await _openBox();
+    final lowerQuery = query.toLowerCase();
 
-      final List<News> body = (jsonResp["articles"])
-          .map<News>((obj) => News.fromJson(obj))
-          .toList();
-
-      yield body;
-    } catch (e) {
-      print("Ошибка при запросе на получение новостей");
-      yield [];
-    }
-
+    return box.values
+        .where((news) =>
+    news.title.toLowerCase().contains(lowerQuery) ||
+        news.description.toLowerCase().contains(lowerQuery))
+        .toList();
   }
 }

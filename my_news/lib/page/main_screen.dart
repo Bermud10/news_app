@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
 import '../object/news_obj.dart';
 import '../services/news_service.dart';
 import '../widgets/news_item.dart';
@@ -13,36 +15,12 @@ class NewsScreen extends StatefulWidget {
 
 class _NewsScreenState extends State<NewsScreen> {
 
-  final NewsService _newsService = NewsService();
+  final HiveDbService dbService = HiveDbService();
+
   final TextEditingController _searchController = TextEditingController();
-  late StreamSubscription? subscription;
+  StreamSubscription<List<News>>? subscription;
   bool _isLoading = false;
-
-  List<News> listNews = [];
-
-  void _searchNews() async {
-
-    if (_searchController.text.isEmpty) return;
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-
-      subscription = _newsService.searchNews(_searchController.text).listen((data) {
-
-        listNews = data;
-
-        setState(() {
-          _isLoading = false;
-        });
-
-      });
-    } catch (e) {
-      print("Ошибка при поиске");
-    }
-  }
+  List<News> foundNews = [];
 
   @override
   Widget build(BuildContext context) {
@@ -66,10 +44,10 @@ class _NewsScreenState extends State<NewsScreen> {
                 ),
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.search),
-                  onPressed: _searchNews,
+                  onPressed: getNewsFromBD,
                 ),
               ),
-              onSubmitted: (_) => _searchNews(),
+              // onSubmitted: (_) => searchNewsFromBd(),
             ),
 
             const SizedBox(height: 16),
@@ -78,7 +56,7 @@ class _NewsScreenState extends State<NewsScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _searchNews,
+                onPressed: getNewsFromBD,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blueGrey,
                   foregroundColor: Colors.white,
@@ -101,18 +79,39 @@ class _NewsScreenState extends State<NewsScreen> {
               ),
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
+
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => context.go("/create_news"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueGrey,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  'Создать новость',
+                  style: TextStyle(fontSize: 16),
+                ),
+              ),
+            ),
+
+          const SizedBox(height: 24),
 
            Expanded(
              child: ListView.builder(
-               itemCount: listNews.length,
+               itemCount: foundNews.length,
                itemBuilder: (context, i) {
 
                  if (_isLoading) {
                    return CircularProgressIndicator();
                  }
 
-                 if(_searchController.text.isNotEmpty && listNews.isEmpty){
+                 if(_searchController.text.isNotEmpty && foundNews.isEmpty){
                    return Center(
                      child: Text(
                        "Новостей не найдено"
@@ -120,7 +119,7 @@ class _NewsScreenState extends State<NewsScreen> {
                    );
                  }
 
-                 return NewsItem(news: listNews[i]);
+                 return NewsItem(news: foundNews[i]);
                }
              ),
            )
@@ -129,6 +128,33 @@ class _NewsScreenState extends State<NewsScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> getNewsFromBD() async {
+    if (_searchController.text.trim().isEmpty) {
+      setState(() {
+        foundNews = [];
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      foundNews = [];
+    });
+
+    try {
+      final news = await dbService.searchNews(_searchController.text.trim());
+      setState(() {
+        foundNews = news;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        foundNews = [];
+      });
+    }
   }
 
   //отписка
