@@ -8,15 +8,20 @@ class DbService {
   static Database? _database;
 
    Future<Database> _getDB() async {
-
+     print("*********1");
     if(_database != null) {
+      print("*********2");
       return _database!;
     }
+     print("*********3");
 
-    _database = await openDatabase(
-        join(await getDatabasesPath(), _dbName),
-        onCreate: (db, version) async {
-          return
+     final dbPath = await getDatabasesPath();
+     final path = join(dbPath, _dbName);
+
+    try {
+      _database = await openDatabase(
+          path,
+          onCreate: (db, version) async {
             await db.execute('''CREATE TABLE TableNews(
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           title TEXT NOT NULL,
@@ -26,9 +31,14 @@ class DbService {
           publishedAt TEXT NOT NULL,
           source TEXT NOT NULL
           )''');
-        },
-        version: _version
-    );
+            print("**** Таблица создана");
+          },
+          version: _version
+      );
+      print("**** бд открыта");
+    }catch (e) {
+      print("*********4 ошибка создания бд${e}");
+    }
     return _database!;
   }
 
@@ -53,13 +63,15 @@ class DbService {
   }
 
   Future<List<News>> _searchNewsFuture(String query) async {
+     print("!!!!!!1");
     final db = await _getDB();
+     print("!!!!!!2");
     final List<Map<String, dynamic>> maps = await db.query(
         "TableNews",
         where: 'title LIKE ?',
         whereArgs: ['%$query%']
     );
-
+     print("!!!!!!3");
     return List.generate(maps.length, (i) => News.fromJson(maps[i]));
   }
 }

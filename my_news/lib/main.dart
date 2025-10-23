@@ -3,7 +3,10 @@ import 'package:my_news/page/create_news_page.dart';
 import 'package:my_news/page/main_screen.dart';
 import 'package:go_router/go_router.dart';
 
+import 'database_init.dart';
+
 main() {
+  initDatabase();
   runApp( MyApp());
 }
 
