@@ -1,77 +1,33 @@
-import 'package:my_news/object/news_obj.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
+import 'package:hive/hive.dart';
+import '../object/news_obj.dart';
 
-class DbService {
-  static const int _version = 1;
-  static const String _dbName = "News.db";
-  static Database? _database;
+class HiveDbService {
+  static const String _boxName = 'news_box';
 
-   Future<Database> _getDB() async {
-     print("*********1");
-    if(_database != null) {
-      print("*********2");
-      return _database!;
-    }
-     print("*********3");
-
-     final dbPath = await getDatabasesPath();
-     final path = join(dbPath, _dbName);
-
-    try {
-      _database = await openDatabase(
-          path,
-          onCreate: (db, version) async {
-            await db.execute('''CREATE TABLE TableNews(
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          title TEXT NOT NULL,
-          description TEXT NOT NULL,
-          url TEXT NOT NULL,
-          urlToImage TEXT,
-          publishedAt TEXT NOT NULL,
-          source TEXT NOT NULL
-          )''');
-            print("**** Таблица создана");
-          },
-          version: _version
-      );
-      print("**** бд открыта");
-    }catch (e) {
-      print("*********4 ошибка создания бд${e}");
-    }
-    return _database!;
+  Future<Box<News>> _openBox() async {
+    return await Hive.openBox<News>(_boxName);
   }
 
-  Future<int> addNews(News news) async {
-    final db = await _getDB();
-    return await db.insert("TableNews", news.toJson(), conflictAlgorithm: ConflictAlgorithm.replace);
+  Future<void> addNews(News news) async {
+    final box = await _openBox();
+    await box.add(news);
   }
-
 
   Future<List<News>> getAllNews() async {
-    final db = await _getDB();
-    final List<Map<String,dynamic>> maps = await db.query('TableNews');
-
-    if(maps.isEmpty){
-      return [];
-    }
-    return List.generate(maps.length, (i) => News.fromJson(maps[i]));
+    final box = await _openBox();
+    return box.values.toList();
   }
 
-  Stream<List<News>> searchNews(String query){
-    return Stream.fromFuture(_searchNewsFuture(query));
-  }
+  Future<List<News>> searchNews(String query) async {
+    if (query.trim().isEmpty) return [];
 
-  Future<List<News>> _searchNewsFuture(String query) async {
-     print("!!!!!!1");
-    final db = await _getDB();
-     print("!!!!!!2");
-    final List<Map<String, dynamic>> maps = await db.query(
-        "TableNews",
-        where: 'title LIKE ?',
-        whereArgs: ['%$query%']
-    );
-     print("!!!!!!3");
-    return List.generate(maps.length, (i) => News.fromJson(maps[i]));
+    final box = await _openBox();
+    final lowerQuery = query.toLowerCase();
+
+    return box.values
+        .where((news) =>
+    news.title.toLowerCase().contains(lowerQuery) ||
+        news.description.toLowerCase().contains(lowerQuery))
+        .toList();
   }
 }

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/adapters.dart';
 import 'package:my_news/page/create_news_page.dart';
 import 'package:my_news/page/main_screen.dart';
 import 'package:go_router/go_router.dart';
 
-import 'database_init.dart';
+import 'object/news_obj.dart';
 
-main() {
-  initDatabase();
+main() async {
+  await Hive.initFlutter();
+  Hive.registerAdapter(NewsAdapter());
   runApp( MyApp());
 }
 

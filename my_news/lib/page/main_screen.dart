@@ -15,7 +15,7 @@ class NewsScreen extends StatefulWidget {
 
 class _NewsScreenState extends State<NewsScreen> {
 
-  DbService dbService = DbService();
+  final HiveDbService dbService = HiveDbService();
 
   final TextEditingController _searchController = TextEditingController();
   StreamSubscription<List<News>>? subscription;
@@ -131,28 +131,30 @@ class _NewsScreenState extends State<NewsScreen> {
   }
 
   Future<void> getNewsFromBD() async {
+    if (_searchController.text.trim().isEmpty) {
+      setState(() {
+        foundNews = [];
+      });
+      return;
+    }
 
-    subscription?.cancel();
+    setState(() {
+      _isLoading = true;
+      foundNews = [];
+    });
 
-   setState(() {
-     _isLoading = true;
-     foundNews = [];
-   });
-   print("!!!!!!");
-   final stream = dbService.searchNews(_searchController.text.trim());
-   subscription = stream.listen((value) {
-     setState(() {
-       print("!!!!!!${value}");
-       foundNews = value;
-       _isLoading = false;
-     });
-   },onError: (error) {
-     setState(() {
-       _isLoading = false;
-       foundNews = [];
-     });
-   }
-   );
+    try {
+      final news = await dbService.searchNews(_searchController.text.trim());
+      setState(() {
+        foundNews = news;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        foundNews = [];
+      });
+    }
   }
 
   //отписка

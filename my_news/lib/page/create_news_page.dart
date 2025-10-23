@@ -14,7 +14,7 @@ class CreateNewsPage extends StatefulWidget {
 
 class CreateNewsPageState extends State<CreateNewsPage> {
 
-  DbService dbService = DbService();
+  final HiveDbService dbService = HiveDbService();
 
   TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
@@ -167,16 +167,12 @@ class CreateNewsPageState extends State<CreateNewsPage> {
     );
 
     try {
-      dbService.addNews(newNews);
-
+      await dbService.addNews(newNews);
       showModalDialog(context, "Новость добавлена");
-
-      setState(() {
-        clearControls();
-      });
-
-    }catch (e) {
-      showModalDialog(context, "Ошибка при добавлении новости");
+      clearControls();
+    } catch (e) {
+      showModalDialog(context, "Ошибка при добавлнии новости");
+      print("Ошибка при добавлнии новости ${e}");
     }
 
   }
