@@ -31,4 +31,7 @@ class News {
     required this.source,
   });
 
+// коммент мой, не нейросетевой, чтоб не забыть!
+// команда для генерации news_obg.g flutter pub run build_runner build
+
 }
